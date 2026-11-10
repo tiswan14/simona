@@ -122,7 +122,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                                 SIMONA
                             </h1>
                             <p className="text-xs text-white/60">
-                                BPS Pangandaran
+                                BPS Kabupaten Pangandaran
                             </p>
                         </div>
                     </div>
@@ -158,11 +158,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                                             onClick={onClose}
                                             aria-current={active ? 'page' : undefined}
                                             className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition ${active
-                                                    ? 'bg-white text-[#18384D]'
-                                                    : 'text-white/75 hover:bg-white/10 hover:text-white'
+                                                ? 'bg-white text-[#18384D]'
+                                                : 'text-white/75 hover:bg-white/10 hover:text-white'
                                                 }`}
                                         >
-                                            <Icon className="size-[18px] shrink-0" />
+                                            <Icon className="size-4.5 shrink-0" />
                                             <span>{item.label}</span>
 
                                             {active && (
@@ -183,7 +183,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         onClick={onClose}
                         className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
                     >
-                        <Settings className="size-[18px]" />
+                        <Settings className="size-4.5" />
                         Pengaturan
                     </Link>
 

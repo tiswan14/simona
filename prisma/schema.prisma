@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String  @id @default(cuid())
+  name     String
+  username String  @unique
+  email    String? @unique
+  password String
+  role     String  @default("PEGAWAI")
+  isActive Boolean @default(true)
+
+  imports           BudgetImport[]   @relation("ImportCreator")
+  createdRevisions  BudgetRevision[] @relation("RevisionCreator")
+  approvedRevisions BudgetRevision[] @relation("RevisionApprover")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BudgetPeriod {
+  id     String @id @default(cuid())
+  year   Int    @unique
+  name   String
+  status String @default("ACTIVE")
+
+  items     BudgetItem[]
+  imports   BudgetImport[]
+  revisions BudgetRevision[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BudgetImport {
+  id       String @id @default(cuid())
+  periodId String
+
+  fileName String
+  fileHash String?
+  status   String  @default("PENDING")
+
+  totalRows    Int @default(0)
+  importedRows Int @default(0)
+  skippedRows  Int @default(0)
+  errorRows    Int @default(0)
+
+  importedAt DateTime?
+
+  importedById String?
+  importedBy   User?   @relation("ImportCreator", fields: [importedById], references: [id], onDelete: SetNull)
+
+  period BudgetPeriod @relation(fields: [periodId], references: [id], onDelete: Restrict)
+
+  items BudgetItem[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([periodId, fileHash])
+  @@index([periodId])
+  @@index([status])
+}
+
+model BudgetItem {
+  id       String  @id @default(cuid())
+  periodId String
+  parentId String?
+
+  sourceImportId String?
+
+  level  String
+  code   String?
+  ibCode String?
+  name   String
+
+  sortOrder Int  @default(0)
+  sourceRow Int?
+
+  volume    Float?
+  unit      String?
+  unitPrice BigInt?
+
+  initialBudget BigInt @default(0)
+  currentBudget BigInt @default(0)
+
+  manualAmount          BigInt?
+  sourceRevisionAmount  BigInt?
+  sourceRemainingBudget BigInt?
+
+  formula        String?
+  isValid        Boolean?
+  validationNote String?
+  notes          String?
+
+  period BudgetPeriod @relation(fields: [periodId], references: [id], onDelete: Restrict)
+
+  parent   BudgetItem?  @relation("BudgetHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children BudgetItem[] @relation("BudgetHierarchy")
+
+  sourceImport BudgetImport? @relation(fields: [sourceImportId], references: [id], onDelete: SetNull)
+
+  revisionItems BudgetRevisionItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([periodId])
+  @@index([parentId])
+  @@index([level])
+  @@index([code])
+  @@index([sourceImportId])
+}
+
+model BudgetRevision {
+  id       String @id @default(cuid())
+  periodId String
+
+  revisionNumber Int
+  title          String
+  description    String?
+
+  effectiveDate DateTime
+  status        String   @default("DRAFT")
+
+  createdById  String?
+  approvedById String?
+
+  createdBy  User? @relation("RevisionCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  approvedBy User? @relation("RevisionApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  period BudgetPeriod @relation(fields: [periodId], references: [id], onDelete: Restrict)
+
+  items BudgetRevisionItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([periodId, revisionNumber])
+  @@index([periodId])
+  @@index([status])
+}
+
+model BudgetRevisionItem {
+  id           String @id @default(cuid())
+  revisionId   String
+  budgetItemId String
+
+  oldBudget BigInt
+  newBudget BigInt
+  delta     BigInt
+
+  reason String?
+
+  revision   BudgetRevision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  budgetItem BudgetItem     @relation(fields: [budgetItemId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+
+  @@unique([revisionId, budgetItemId])
+  @@index([budgetItemId])
+}

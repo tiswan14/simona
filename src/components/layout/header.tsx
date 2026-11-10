@@ -1,15 +1,20 @@
-
 'use client'
 
 import { Menu } from 'lucide-react'
 import { usePathname } from 'next/navigation'
+
 import UserMenu from './user-menu'
 
 type HeaderProps = {
     onMenuClick: () => void
 }
 
-const pageTitles: Record<string, { title: string; description: string }> = {
+type PageInfo = {
+    title: string
+    description: string
+}
+
+const pageTitles: Record<string, PageInfo> = {
     '/dashboard': {
         title: 'Dashboard',
         description: 'Ringkasan monitoring anggaran',
@@ -42,32 +47,46 @@ const pageTitles: Record<string, { title: string; description: string }> = {
         title: 'Pengaturan',
         description: 'Konfigurasi sistem SIMONA',
     },
+    '/users': {
+        title: 'Manajemen Pengguna',
+        description: 'Pengelolaan akun dan hak akses pengguna',
+    },
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
     const pathname = usePathname()
 
-    const currentPage = Object.entries(pageTitles).find(
-        ([path]) => pathname === path || pathname.startsWith(`${path}/`),
-    )?.[1] ?? pageTitles['/dashboard']
+    const matchedPath = Object.keys(pageTitles)
+        .sort((a, b) => b.length - a.length)
+        .find(
+            (path) => pathname === path || pathname.startsWith(`${path}/`),
+        )
+
+    const currentPage = matchedPath
+        ? pageTitles[matchedPath]
+        : {
+            title: 'SIMONA',
+            description: 'Sistem Monitoring dan Analisis Anggaran',
+        }
 
     return (
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-3">
+        <header className='sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8'>
+            <div className='flex items-center gap-3'>
                 <button
-                    type="button"
-                    aria-label="Buka navigasi"
+                    type='button'
+                    aria-label='Buka navigasi'
                     onClick={onMenuClick}
-                    className="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 lg:hidden"
+                    className='rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 lg:hidden'
                 >
-                    <Menu className="size-5" />
+                    <Menu className='size-5' />
                 </button>
 
                 <div>
-                    <h2 className="text-lg font-bold text-[#243746]">
+                    <h2 className='text-lg font-bold text-[#243746]'>
                         {currentPage.title}
                     </h2>
-                    <p className="hidden text-sm text-slate-500 sm:block">
+
+                    <p className='hidden text-sm text-slate-500 sm:block'>
                         {currentPage.description}
                     </p>
                 </div>

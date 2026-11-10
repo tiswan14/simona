@@ -2,197 +2,208 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
-
-function EyeIcon({ visible }: { visible: boolean }) {
-    return (
-        <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-5"
-            aria-hidden="true"
-        >
-            {visible ? (
-                <>
-                    <path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
-                    <circle cx="12" cy="12" r="3" />
-                </>
-            ) : (
-                <>
-                    <path d="m3 3 18 18" />
-                    <path d="M10.6 5.6A10.5 10.5 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a15 15 0 0 1-3.1 3.8" />
-                    <path d="M6.2 6.2C3.8 7.8 2.5 12 2.5 12s3.5 6.5 9.5 6.5c1.2 0 2.3-.3 3.3-.8" />
-                </>
-            )}
-        </svg>
-    )
-}
+import { useState, type FormEvent } from 'react'
+import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
+import { Eye, EyeOff, LoaderCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function LoginPage() {
+    const router = useRouter()
+
+    const [username, setUsername] = useState('')
+    const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+
+    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault()
+
+        if (!username.trim() || !password) {
+            toast.error('Username dan password wajib diisi')
+            return
+        }
+
+        setIsLoading(true)
+
+        try {
+            const result = await signIn('credentials', {
+                username: username.trim(),
+                password,
+                redirect: false,
+            })
+
+            if (!result || result.error) {
+                toast.error('Username atau password salah')
+                return
+            }
+
+            toast.success('Login berhasil')
+            router.replace('/dashboard')
+            router.refresh()
+        } catch {
+            toast.error('Terjadi kesalahan. Silakan coba lagi')
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     return (
-        <main className="flex min-h-screen items-center justify-center bg-[#F2F3F4] px-4 py-8 sm:px-8">
-            <div className="grid min-h-180 w-full max-w-6xl overflow-hidden rounded-2xl border border-[#E3E6E8] bg-white shadow-sm lg:grid-cols-2">
+        <main className='flex h-dvh w-full items-center justify-center overflow-hidden bg-[#F1F5F9] p-3 sm:p-5'>
+            <div className='grid h-full w-full max-w-360 grid-rows-[0.85fr_1.15fr] overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.18)] lg:max-h-212.5 lg:grid-cols-2 lg:grid-rows-1 lg:rounded-3xl'>
 
                 {/* Brand Panel */}
-                <section className="flex flex-col justify-between bg-[#18384D] px-8 py-10 text-white sm:px-12 sm:py-12 lg:px-14 lg:py-14">
-                    <div>
-                        <div className="flex items-center gap-4">
-                            <div className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-white p-2">
+                <section className='relative flex min-h-0 flex-col justify-between overflow-hidden bg-[#0F5B78] px-6 py-5 text-white sm:px-10 sm:py-8 lg:px-12 lg:py-10 xl:px-16 xl:py-12'>
+                    <div className='animate-fade-up relative z-10'>
+                        <div className='flex items-center gap-3 sm:gap-4'>
+                            <div className='flex size-12 shrink-0 items-center justify-center rounded-xl bg-white p-2 shadow-lg sm:size-14 lg:size-16'>
                                 <Image
-                                    src="/logo-bps.svg"
-                                    alt="Logo Badan Pusat Statistik"
+                                    src='/logo-bps.svg'
+                                    alt='Logo Badan Pusat Statistik'
                                     width={100}
                                     height={100}
                                     priority
-                                    className="h-full w-full object-contain"
+                                    className='h-full w-full object-contain'
                                 />
                             </div>
 
                             <div>
-                                <h1 className="text-2xl font-bold tracking-wide">
+                                <h1 className='text-xl font-bold tracking-wide sm:text-2xl'>
                                     SIMONA
                                 </h1>
-                                <p className="mt-1 text-sm text-white/70">
+                                <p className='mt-0.5 text-xs text-white/75 sm:text-sm'>
                                     BPS Kabupaten Pangandaran
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="my-16 lg:my-0">
-                        <div className="mb-6 h-1 w-12 rounded-full bg-[#E99A48]" />
+                    <div className='animate-fade-up relative z-10 my-4 [animation-delay:150ms] lg:my-0'>
+                        <div className='mb-4 h-1 w-12 rounded-full bg-[#67D5DC] sm:mb-6' />
 
-                        <p className="text-sm font-semibold uppercase tracking-wider text-[#E99A48]">
+                        <p className='text-xs font-semibold uppercase tracking-[0.18em] text-[#CCF0F5] sm:text-sm'>
                             Sistem Informasi Internal
                         </p>
 
-                        <h2 className="mt-5 max-w-md text-3xl font-semibold leading-snug sm:text-4xl">
+                        <h2 className='mt-3 max-w-lg text-2xl font-bold leading-tight tracking-tight sm:mt-5 sm:text-3xl lg:text-4xl xl:text-5xl'>
                             Sistem Monitoring dan Analisis Anggaran
                         </h2>
 
-                        <p className="mt-6 max-w-md text-base leading-8 text-white/70">
+                        <p className='mt-3 max-w-md text-xs leading-relaxed text-white/75 sm:mt-6 sm:text-sm sm:leading-7 lg:text-base'>
                             Mendukung pengelolaan dan pemantauan anggaran
                             BPS Kabupaten Pangandaran secara terintegrasi.
                         </p>
                     </div>
 
-                    <div className="border-t border-white/15 pt-6">
-                        <p className="text-sm text-white/60">
+                    <div className='animate-fade-up relative z-10 border-t border-white/15 pt-3 [animation-delay:300ms] sm:pt-5 lg:pt-6'>
+                        <p className='text-xs text-white/75 sm:text-sm'>
                             Badan Pusat Statistik Kabupaten Pangandaran
                         </p>
-                        <p className="mt-1 text-xs text-white/40">
+                        <p className='mt-1 text-[10px] text-white/50 sm:text-xs'>
                             © 2026 SIMONA
                         </p>
                     </div>
                 </section>
 
                 {/* Login Panel */}
-                <section className="flex flex-col justify-center px-7 py-12 sm:px-14 lg:px-16 xl:px-20">
-                    <div className="mx-auto w-full max-w-md">
-                        <div className="mb-10">
-                            <p className="text-sm font-semibold text-[#C47A31]">
+                <section className='relative flex min-h-0 flex-col justify-center overflow-hidden bg-white px-6 py-5 sm:px-10 sm:py-8 lg:px-12 xl:px-20'>
+                    <div className='animate-fade-up relative z-10 mx-auto w-full max-w-md'>
+                        <div className='mb-6 sm:mb-8 lg:mb-10'>
+                            <p className='text-xs font-bold uppercase tracking-[0.16em] text-[#0F5B78] sm:text-sm'>
                                 LOGIN PENGGUNA
                             </p>
 
-                            <h2 className="mt-4 text-3xl font-bold tracking-tight text-[#243746] sm:text-4xl">
+                            <h2 className='mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl'>
                                 Selamat datang
                             </h2>
 
-                            <p className="mt-4 text-base leading-7 text-[#77838B]">
+                            <p className='mt-2 text-sm leading-6 text-slate-500 sm:mt-4 sm:text-base sm:leading-7'>
                                 Masukkan akun Anda untuk melanjutkan
                                 ke sistem SIMONA.
                             </p>
                         </div>
 
                         <form
-                            className="space-y-6"
-                            onSubmit={(event) => event.preventDefault()}
+                            className='animate-fade-up space-y-4 [animation-delay:150ms] sm:space-y-5'
+                            onSubmit={handleSubmit}
                         >
-                            <div className="space-y-2">
+                            <div className='space-y-2'>
                                 <label
-                                    htmlFor="email"
-                                    className="block text-sm font-semibold text-[#344653]"
+                                    htmlFor='username'
+                                    className='block text-sm font-semibold text-slate-700'
                                 >
-                                    Alamat email
+                                    Username
                                 </label>
 
                                 <input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    placeholder="nama@bps.go.id"
-                                    autoComplete="username"
+                                    id='username'
+                                    name='username'
+                                    type='text'
+                                    placeholder='Masukkan username'
+                                    autoComplete='username'
+                                    value={username}
+                                    onChange={(event) => setUsername(event.target.value)}
+                                    disabled={isLoading}
                                     required
-                                    className="h-13 w-full rounded-lg border border-[#DCE1E4] bg-white px-4 text-base text-[#243746] outline-none transition placeholder:text-[#A0A8AC] focus:border-[#18384D] focus:ring-2 focus:ring-[#18384D]/10"
+                                    className='h-12 w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 text-sm text-slate-900 outline-none transition-[border-color,background-color,box-shadow] duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-[#0F5B78] focus:bg-white focus:ring-4 focus:ring-[#0F5B78]/10 disabled:cursor-not-allowed disabled:opacity-60 sm:h-13 sm:text-base'
                                 />
                             </div>
 
-                            <div className="space-y-2">
+                            <div className='space-y-2'>
                                 <label
-                                    htmlFor="password"
-                                    className="block text-sm font-semibold text-[#344653]"
+                                    htmlFor='password'
+                                    className='block text-sm font-semibold text-slate-700'
                                 >
                                     Password
                                 </label>
 
-                                <div className="relative">
+                                <div className='relative'>
                                     <input
-                                        id="password"
-                                        name="password"
+                                        id='password'
+                                        name='password'
                                         type={showPassword ? 'text' : 'password'}
-                                        placeholder="Masukkan password"
-                                        autoComplete="current-password"
+                                        placeholder='Masukkan password'
+                                        autoComplete='current-password'
+                                        value={password}
+                                        onChange={(event) => setPassword(event.target.value)}
+                                        disabled={isLoading}
                                         required
-                                        className="h-13 w-full rounded-lg border border-[#DCE1E4] bg-white px-4 pr-14 text-base text-[#243746] outline-none transition placeholder:text-[#A0A8AC] focus:border-[#18384D] focus:ring-2 focus:ring-[#18384D]/10"
+                                        className='h-12 w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 pr-12 text-sm text-slate-900 outline-none transition-[border-color,background-color,box-shadow] duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-[#0F5B78] focus:bg-white focus:ring-4 focus:ring-[#0F5B78]/10 disabled:cursor-not-allowed disabled:opacity-60 sm:h-13 sm:text-base'
                                     />
 
                                     <button
-                                        type="button"
+                                        type='button'
                                         onClick={() => setShowPassword((previous) => !previous)}
                                         aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#89949B] transition hover:text-[#18384D]"
+                                        className='absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-[#CCF0F5]/50 hover:text-[#0F5B78] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F5B78]'
                                     >
-                                        <EyeIcon visible={showPassword} />
+                                        {showPassword ? (
+                                            <EyeOff className='size-5' />
+                                        ) : (
+                                            <Eye className='size-5' />
+                                        )}
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between gap-3">
-                                <label className="flex cursor-pointer items-center gap-2.5">
-                                    <input
-                                        type="checkbox"
-                                        name="remember"
-                                        className="size-4 accent-[#18384D]"
-                                    />
-                                    <span className="text-sm text-[#65737C]">
-                                        Ingat saya
-                                    </span>
-                                </label>
-
-                                <button
-                                    type="button"
-                                    className="text-sm font-semibold text-[#B96C25] hover:underline"
-                                >
-                                    Lupa password?
-                                </button>
-                            </div>
-
                             <button
-                                type="submit"
-                                className="h-13 w-full rounded-lg bg-[#18384D] text-base font-semibold text-white transition hover:bg-[#244D65] focus:outline-none focus:ring-2 focus:ring-[#18384D] focus:ring-offset-2"
+                                type='submit'
+                                disabled={isLoading}
+                                className='flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#0F5B78] text-sm font-semibold text-white shadow-lg shadow-[#0F5B78]/15 transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#0B4962] hover:shadow-xl hover:shadow-[#0F5B78]/20 focus:outline-none focus:ring-4 focus:ring-[#0F5B78]/20 active:translate-y-0 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 disabled:shadow-none sm:mt-2 sm:h-13 sm:text-base'
                             >
-                                Masuk
+                                {isLoading ? (
+                                    <>
+                                        <LoaderCircle className='size-5 animate-spin' />
+                                        Memproses...
+                                    </>
+                                ) : (
+                                    'Masuk'
+                                )}
                             </button>
                         </form>
 
-                        <div className="mt-12 border-t border-[#E8EAEB] pt-6">
-                            <p className="text-sm leading-6 text-[#929BA0]">
+                        <div className='animate-fade-up mt-6 border-t border-slate-100 pt-4 [animation-delay:300ms] sm:mt-9 sm:pt-6 lg:mt-12'>
+                            <p className='text-xs leading-5 text-slate-400 sm:text-sm sm:leading-6'>
                                 Akses terbatas untuk pegawai dan pengguna
                                 yang memiliki izin resmi BPS Kabupaten Pangandaran.
                             </p>
